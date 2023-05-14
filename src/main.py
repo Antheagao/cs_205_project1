@@ -19,8 +19,14 @@ from node import Node
 
 
 def main():
+    # Declare variables
     initial_state = [[0], [2], [3], [4, 0], [5], [6, 0], [7], [8, 0], [9], [1]]
     heuristic = 'uniform cost search'
+    
+    # Display the puzzle name and get the heuristic to use
+    print('Welcome to cs205 9-men in a trench puzzle solver.')
+    heuristic = str(input('Select algorithm.\n (1) Uniform Cost Search,\n'
+                          '(2) misplaced tile,\n (3) manhattan distance:'))
     
     print('Beginning puzzle...')
     time1 = time.perf_counter()
@@ -46,6 +52,10 @@ def uniform_cost_search(puzzle: list[list[int]], heuristic: str) -> Node:
         max_queue_size = max(max_queue_size, len(working_queue))
         node = heap.heappop(working_queue)
         repeated_states.add(node.get_hash())
+        print('The best state to expand with a g(n) =', node.gn, 'and h(n) =',
+              node.hn, 'is...')
+        node.print_puzzle()
+        
         if node.puzzle == goal_state:
             while stack_to_print:
                 node = stack_to_print.pop()
