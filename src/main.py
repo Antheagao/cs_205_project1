@@ -20,13 +20,17 @@ from node import Node
 def main():
     initial_state = [[0], [2], [3], [4, 0], [5], [6, 0], [7], [8, 0], [9], [1]]
     heuristic = ''
-    uniform_cost_search(initial_state, heuristic)
+    print(len(initial_state))
+    print(len(initial_state[0]))
+    print(len(initial_state[3]))
+    print(len(initial_state) - 1)
+    #uniform_cost_search(initial_state, heuristic)
 
 
 def uniform_cost_search(puzzle: list[list[int]], heuristic: str) -> Node:
     # Declare variables
     goal_state = [[1], [2], [3], [4, 0], [5], [6, 0], [7], [8, 0], [9], [0]]
-    starting_node = Node(puzzle, None)
+    starting_node = Node(puzzle, None, 0, 0)
     working_queue = []
     repeated_states = set()
     heap.heappush(working_queue, starting_node)
@@ -49,11 +53,10 @@ def uniform_cost_search(puzzle: list[list[int]], heuristic: str) -> Node:
             return node
         else:
             stack_to_print.append(node.puzzle)
-        
-        for child in node.get_children():
-            if child.get_hash() not in repeated_states:
-                heap.heappush(working_queue, child)
-                repeated_states.add(child.get_hash())
+            for child in node.get_children(heuristic):
+                if child.get_hash() not in repeated_states:
+                    heap.heappush(working_queue, child)
+
     return None
     
 
