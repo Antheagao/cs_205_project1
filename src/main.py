@@ -13,18 +13,20 @@ __author__ = 'Anthony Mendez'
 
 from collections import defaultdict
 import heapq as heap
+import time
 
 from node import Node
 
 
 def main():
     initial_state = [[0], [2], [3], [4, 0], [5], [6, 0], [7], [8, 0], [9], [1]]
-    heuristic = ''
-    print(len(initial_state))
-    print(len(initial_state[0]))
-    print(len(initial_state[3]))
-    print(len(initial_state) - 1)
-    #uniform_cost_search(initial_state, heuristic)
+    heuristic = 'uniform cost search'
+    
+    print('Beginning puzzle...')
+    time1 = time.perf_counter()
+    uniform_cost_search(initial_state, heuristic)
+    time2 = time.perf_counter()
+    print('Puzzle solved in:', '{:.3f}'.format(time2 - time1), 'seconds.')
 
 
 def uniform_cost_search(puzzle: list[list[int]], heuristic: str) -> Node:
@@ -53,10 +55,12 @@ def uniform_cost_search(puzzle: list[list[int]], heuristic: str) -> Node:
             return node
         else:
             stack_to_print.append(node.puzzle)
+            num_nodes_expanded += 1
             for child in node.get_children(heuristic):
                 if child.get_hash() not in repeated_states:
                     heap.heappush(working_queue, child)
 
+    print('failure')
     return None
     
 

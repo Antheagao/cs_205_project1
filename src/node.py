@@ -16,26 +16,38 @@ class Node:
     
     def get_children(self, heuristic) -> list['Node']:
         children = []
-        HIGH = len(self.puzzle) - 1
         if heuristic == 'uniform cost search':
             for row in range(len(self.puzzle)):
                 for col in range(len(self.puzzle[row])):
                     if not self.puzzle[row][col]:
                         # Check if blank can move down
-                        if self.in_row_bounds() and self.puzzle[row + 1][col]:
+                        if self.can_move_blank_down(row, col):
                             puzzle_copy = copy.deepcopy(self.puzzle)
                             puzzle_copy[row][col] = puzzle_copy[row + 1][col]
                             puzzle_copy[row + 1][col] = 0
                             child = Node(puzzle_copy, self, self.gn + 1, 0)
                             children.append(child)
                         # Check if blank can move up
-                        
+                        elif self.can_move_blank_up(row, col):
+                            puzzle_copy = copy.deepcopy(self.puzzle)
+                            puzzle_copy[row][col] = puzzle_copy[row - 1][col]
+                            puzzle_copy[row - 1][col] = 0
+                            child = Node(puzzle_copy, self, self.gn + 1, 0)
+                            children.append(child)
                         # Check if blank can move left
-                        
+                        elif self.can_move_blank_left(row, col):
+                            puzzle_copy = copy.deepcopy(self.puzzle)
+                            puzzle_copy[row][col] = puzzle_copy[row][col - 1]
+                            puzzle_copy[row][col - 1] = 0
+                            child = Node(puzzle_copy, self, self.gn + 1, 0)
+                            children.append(child)
                         # Check if blank can move right
-                        
-                            
-                
+                        elif self.can_move_blank_right(row, col):
+                            puzzle_copy = copy.deepcopy(self.puzzle)
+                            puzzle_copy[row][col] = puzzle_copy[row][col + 1]
+                            puzzle_copy[row][col + 1] = 0
+                            child = Node(puzzle_copy, self, self.gn + 1, 0)
+                            children.append(child)                    
         elif heuristic == 'misplaced tile':
             dum1 = None
         else:
@@ -43,8 +55,22 @@ class Node:
         
         return children
     
-    def in_row_bounds(self, row: int) -> bool:
-        return row >= 0 and row < len(self.puzzle) - 1
+    def can_move_blank_down(self, row: int, col: int) -> bool:
+        return (row >= 0) and (col == 0) and\
+               (row < len(self.puzzle) - 1) and\
+               (self.puzzle[row + 1][col])
+               
+    def can_move_blank_up(self, row: int, col: int) -> bool:
+        return (row > 0) and (row <= len(self.puzzle) - 1) and\
+               (col == 0) and (self.puzzle[row - 1][col])
+       
+    def can_move_blank_left(self, row: int, col: int) -> bool:
+        return (row == 3 or row == 5 or row == 7) and\
+               (col > 0) and (self.puzzle[row][col - 1]) 
+                 
+    def can_move_blank_right(self, row: int, col: int) -> bool:
+        return (row == 3 or row == 5 or row == 7) and\
+               (col == 0) and (self.puzzle[row][col + 1])   
 
     def print_puzzle(self):
         print('|---|')
