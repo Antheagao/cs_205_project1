@@ -28,13 +28,19 @@ class Node:
     
     def misplaced_tile_count(self) -> int:
         misplaced_tiles = 0
-        goal_state = [[1], [2], [3], [4, 0], [5], [6, 0], [7], [8, 0], [9], [0]]
+        goal_tiles = {
+            1: (0, 0), 2: (1, 0), 3: (2, 0),
+            4: (3, 0), 5: (4, 0), 6: (5, 0),
+            7: (6, 0), 8: (7, 0), 9: (8, 0)
+        }
         
         for row in range(len(self.puzzle)):
             for col in range(len(self.puzzle[row])):
-                if self.puzzle[row][col] != goal_state[row][col] and\
-                   self.puzzle[row][col] != 0:
-                    misplaced_tiles += 1
+                tile = self.puzzle[row][col]
+                if tile != 0:
+                    goal_row, goal_col = goal_tiles[tile]
+                    if row != goal_row or col != goal_col:
+                        misplaced_tiles += 1
         return misplaced_tiles
     
     def manhattan_distance(self) -> int:

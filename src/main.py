@@ -11,7 +11,7 @@ wishes to place himself at point 1.
 __version__ = '0.1'
 __author__ = 'Anthony Mendez'
 
-from collections import defaultdict
+from collections import deque
 import heapq as heap
 import time
 
@@ -20,16 +20,26 @@ from node import Node
 
 def main():
     # Declare variables
-    initial_state = [[0], [2], [3], [4, 0], [5], [6, 0], [7], [8, 0], [9], [1]]
+    puzzle = [[]]
+    node = None
     
     # Display the puzzle name and get the heuristic to use
-    print('Welcome to cs205 9-men in a trench puzzle solver.')
+    puzzle_choice = int(input('Welcome to cs205 9-men in a trench'
+                              'puzzle solver. Enter (1) to use a default'
+                              'puzzle, or (2) to create your own puzzle.'))
+    if puzzle_choice == 1:
+        puzzle = create_default_puzzle()
+    else:
+        puzzle = create_custom_puzzle()
+    print('The puzzle you entered is:')
+    node = Node(puzzle, None, 0, 0)
+    node.print_puzzle()
     heuristic = select_heuristic()
     
     # Begin the ai search to solve the puzzle
     print('Beginning puzzle...')
     time1 = time.perf_counter()
-    uniform_cost_search(initial_state, heuristic)
+    node = uniform_cost_search(puzzle, heuristic)
     time2 = time.perf_counter()
     print('Puzzle solved in:', '{:.3f}'.format(time2 - time1), 'seconds.')
 
@@ -53,12 +63,12 @@ def uniform_cost_search(puzzle: list[list[int]], heuristic: str) -> Node:
         repeated_states.add(node.get_hash())
         print('The best state to expand with a g(n) =', node.gn, 'and h(n) =',
               node.hn, 'is...')
-        '''node.print_puzzle()'''
+        node.print_puzzle()
         
         if node.puzzle == goal_state:
-            while stack_to_print:
-                node = stack_to_print.pop()
-                node.print_puzzle()
+            '''while stack_to_print:
+                node = stack_to_print.popleft()
+                node.print_puzzle()'''
             print('Goal state reached!')
             print('Depth of goal node:', node.gn)
             print('Number of nodes expanded:', num_nodes_expanded)
@@ -73,6 +83,41 @@ def uniform_cost_search(puzzle: list[list[int]], heuristic: str) -> Node:
 
     print('failure')
     return None
+
+
+def create_default_puzzle() -> list[list[int]]:
+    difficulty = int(input('Select difficulty on a scale of 0 to 5: '))
+    if difficulty == 0:
+        print('Difficulty 0 selected.')
+        return [[1], [2], [3], [4, 0], [5], [6, 0], [7], [8, 0], [9], [0]]
+    elif difficulty == 1:
+        print('Difficulty 1 selected.')
+        return [[1], [2], [3], [4, 0], [5], [0, 0], [0], [6, 8], [7], [9]]
+    elif difficulty == 2:
+        print('Difficulty 2 selected.')
+        return [[0], [0], [0], [0, 1], [2], [3, 5], [4], [6, 8], [7], [9]]
+    elif difficulty == 3:
+        print('Difficulty 3 selected.')
+        return [[2], [3], [5], [6, 4], [0], [0, 1], [0], [0, 8], [7], [9]]
+    elif difficulty == 4:
+        print('Difficulty 4 selected.')
+        return [[2], [3], [5], [6, 4], [8], [9, 7], [0], [0, 0], [0], [1]]
+    else:
+        print('Difficulty 5 selected.')
+        return [[0], [2], [3], [4, 0], [5], [6, 0], [7], [8, 0], [9], [1]]
+
+
+def create_custom_puzzle():
+    puzzle = [[], [], [], [], [], [], [], [], [], []]
+    for i in range(10):
+        if i == 3 or i == 5 or i == 7:
+            print('Enter row', i + 1, 'with 2 numbers separated by a space.')
+        else:
+            print('Enter row', i + 1, 'with 1 number.')
+        row = int(input().split())
+        for j in range(len(row)):
+            puzzle[i].append(int(row[j]))
+    return puzzle
 
 
 def select_heuristic() -> str:
