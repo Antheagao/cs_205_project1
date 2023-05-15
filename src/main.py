@@ -5,7 +5,6 @@ The trench puzzle is a puzzle where you have 9 people in a trench
 with 13 spaces. The goal is to get all 9 people to their numbered 
 spaces in the trench. For example, the sergent is number 1 and 
 wishes to place himself at point 1.
-    
 """
 
 __version__ = '0.1'
@@ -25,8 +24,8 @@ def main():
     
     # Display the puzzle name and get the heuristic to use
     puzzle_choice = int(input('Welcome to cs205 9-men in a trench'
-                              'puzzle solver. Enter (1) to use a default'
-                              'puzzle, or (2) to create your own puzzle.'))
+                              'puzzle solver. \nEnter (1) to use a default'
+                              ' puzzle, or (2) to create your own puzzle: '))
     if puzzle_choice == 1:
         puzzle = create_default_puzzle()
     else:
@@ -37,14 +36,23 @@ def main():
     heuristic = select_heuristic()
     
     # Begin the ai search to solve the puzzle
-    print('Beginning puzzle...')
+    print('Beginning puzzle...\n')
     time1 = time.perf_counter()
-    node = uniform_cost_search(puzzle, heuristic)
+    uniform_cost_search(puzzle, heuristic)
     time2 = time.perf_counter()
     print('Puzzle solved in:', '{:.3f}'.format(time2 - time1), 'seconds.')
 
 
-def uniform_cost_search(puzzle: list[list[int]], heuristic: str) -> Node:
+def uniform_cost_search(puzzle: list[list[int]], heuristic: str) -> None:
+    """ Perform general search to find the goal state of the puzzle
+
+    Args:
+        puzzle (list[list[int]]): The puzzle to solve with the search
+        heuristic (str): The heuristic to use for the search algorithm
+
+    Returns:
+        _type_: None
+    """
     # Declare variables
     goal_state = [[1], [2], [3], [4, 0], [5], [6, 0], [7], [8, 0], [9], [0]]
     starting_node = Node(puzzle, None, 0, 0)
@@ -66,27 +74,32 @@ def uniform_cost_search(puzzle: list[list[int]], heuristic: str) -> Node:
         node.print_puzzle()
         
         if node.puzzle == goal_state:
-            '''while stack_to_print:
-                node = stack_to_print.popleft()
-                node.print_puzzle()'''
+            # Display the node information if the solution is found
             print('Goal state reached!')
             print('Depth of goal node:', node.gn)
             print('Number of nodes expanded:', num_nodes_expanded)
             print('Max queue size:', max_queue_size)
-            return node
+            return None
         else:
-            stack_to_print.append(node)
+            # Add the children of the node to the working queue
             num_nodes_expanded += 1
             for child in node.get_children(heuristic):
                 if child.get_hash() not in repeated_states:
                     heap.heappush(working_queue, child)
+                    repeated_states.add(child.get_hash())
 
     print('failure')
     return None
 
 
 def create_default_puzzle() -> list[list[int]]:
+    """ Create a default 2d list puzzle with varied difficulty from user input.
+
+    Returns:
+        list[list[int]]: The 2d list based on the difficulty selected.
+    """
     difficulty = int(input('Select difficulty on a scale of 0 to 5: '))
+    
     if difficulty == 0:
         print('Difficulty 0 selected.')
         return [[1], [2], [3], [4, 0], [5], [6, 0], [7], [8, 0], [9], [0]]
@@ -107,22 +120,34 @@ def create_default_puzzle() -> list[list[int]]:
         return [[0], [2], [3], [4, 0], [5], [6, 0], [7], [8, 0], [9], [1]]
 
 
-def create_custom_puzzle():
+def create_custom_puzzle() -> list[list[int]]:
+    """ Create a custom 2d list puzzle from user input.
+
+    Returns:
+        list[list[int]]: A 2d list representing the 9 men puzzle.
+    """
     puzzle = [[], [], [], [], [], [], [], [], [], []]
+    
     for i in range(10):
         if i == 3 or i == 5 or i == 7:
             print('Enter row', i + 1, 'with 2 numbers separated by a space.')
         else:
             print('Enter row', i + 1, 'with 1 number.')
-        row = int(input().split())
+        row = input().split()
         for j in range(len(row)):
             puzzle[i].append(int(row[j]))
     return puzzle
 
 
 def select_heuristic() -> str:
+    """ Select the heuristic to use for the search algorithm from user input.
+
+    Returns:
+        str: The heuristic to use for the search algorithm.
+    """
     choice = int(input('Select algorithm.\n(1) Uniform Cost Search,\n'
                           '(2) misplaced tile,\n(3) manhattan distance: '))
+    
     if choice == 1:
         return 'uniform cost search'
     elif choice == 2:
