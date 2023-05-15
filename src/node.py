@@ -6,7 +6,6 @@ class Node:
         self.parent = parent
         self.gn = gn
         self.hn = hn
-        self.operators = ['up', 'down', 'left', 'right']
     
     def __lt__(self, other):
         return (self.gn + self.hn) < (other.gn + other.hn)      
@@ -16,90 +15,94 @@ class Node:
     
     def get_children(self, heuristic) -> list['Node']:
         children = []
-        if heuristic == 'uniform cost search':
-            for row in range(len(self.puzzle)):
-                for col in range(len(self.puzzle[row])):
-                    if not self.puzzle[row][col]:
-                        # Check if blank can move down
-                        if self.can_move_blank_down(row, col):
+        for row in range(len(self.puzzle)):
+            for col in range(len(self.puzzle[row])):
+                if not self.puzzle[row][col]:
+                    for operator in ['down', 'up', 'left', 'right']:
+                        if self.can_move_blank(row, col, operator):
                             puzzle_copy = copy.deepcopy(self.puzzle)
-                            puzzle_copy[row][col] = puzzle_copy[row + 1][col]
-                            puzzle_copy[row + 1][col] = 0
-                            child = Node(puzzle_copy, self, self.gn + 1, 0)
+                            puzzle_copy = self.move_blank(row, col, operator)
+                            child = self.create_child(heuristic, puzzle_copy)
                             children.append(child)
-                        # Check if blank can move up
-                        elif self.can_move_blank_up(row, col):
-                            puzzle_copy = copy.deepcopy(self.puzzle)
-                            puzzle_copy[row][col] = puzzle_copy[row - 1][col]
-                            puzzle_copy[row - 1][col] = 0
-                            child = Node(puzzle_copy, self, self.gn + 1, 0)
-                            children.append(child)
-                        # Check if blank can move left
-                        elif self.can_move_blank_left(row, col):
-                            puzzle_copy = copy.deepcopy(self.puzzle)
-                            puzzle_copy[row][col] = puzzle_copy[row][col - 1]
-                            puzzle_copy[row][col - 1] = 0
-                            child = Node(puzzle_copy, self, self.gn + 1, 0)
-                            children.append(child)
-                        # Check if blank can move right
-                        elif self.can_move_blank_right(row, col):
-                            puzzle_copy = copy.deepcopy(self.puzzle)
-                            puzzle_copy[row][col] = puzzle_copy[row][col + 1]
-                            puzzle_copy[row][col + 1] = 0
-                            child = Node(puzzle_copy, self, self.gn + 1, 0)
-                            children.append(child)                    
-        elif heuristic == 'misplaced tile':
-            dum1 = None
-        else:
-            dum2 = None
-        
         return children
     
-    def can_move_blank_down(self, row: int, col: int) -> bool:
-        return (row >= 0) and (col == 0) and\
-               (row < len(self.puzzle) - 1) and\
-               (self.puzzle[row + 1][col])
-               
-    def can_move_blank_up(self, row: int, col: int) -> bool:
-        return (row > 0) and (row <= len(self.puzzle) - 1) and\
-               (col == 0) and (self.puzzle[row - 1][col])
-       
-    def can_move_blank_left(self, row: int, col: int) -> bool:
-        return (row == 3 or row == 5 or row == 7) and\
-               (col > 0) and (self.puzzle[row][col - 1]) 
-                 
-    def can_move_blank_right(self, row: int, col: int) -> bool:
-        return (row == 3 or row == 5 or row == 7) and\
-               (col == 0) and (self.puzzle[row][col + 1])   
+    def misplaced_tile_count(self) -> int:
+        misplaced_tiles = 0
+        goal_state = [[1], [2], [3], [4, 0], [5], [6, 0], [7], [8, 0], [9], [0]]
+        
+        for row in range(len(self.puzzle)):
+            for col in range(len(self.puzzle[row])):
+                if self.puzzle[row][col] != goal_state[row][col] and\
+                   self.puzzle[row][col] != 0:
+                    misplaced_tiles += 1
+        return misplaced_tiles
+    
+    def manhattan_distance(self) -> int:
+        distance = 0
+        goal_tiles = {
+            1: (0, 0), 2: (1, 0), 3: (2, 0),
+            4: (3, 0), 5: (4, 0), 6: (5, 0),
+            7: (6, 0), 8: (7, 0), 9: (8, 0)
+        }
+        
+        for row in range(len(self.puzzle)):
+            for col in range(len(self.puzzle[row])):
+                tile = self.puzzle[row][col]
+                if tile != 0:
+                    goal_row, goal_col = goal_tiles[tile]
+                    distance += abs(row - goal_row) + abs(col - goal_col)
+        return distance
+    
+    def create_child(self, heuristic: str, puzzle_copy) -> 'Node':
+        child = Node(puzzle_copy, self, self.gn + 1, 0)
+        if heuristic == 'uniform cost search':
+            return child
+        elif heuristic == 'misplaced tile':
+            child.hn = child.misplaced_tile_count()
+            return child
+        else:
+            child.hn = child.manhattan_distance()
+            return child
+    
+    def can_move_blank(self, row: int, col: int, operator: str) -> bool:
+        if operator == 'down':
+            return row != len(self.puzzle) - 1 and col == 0
+        elif operator == 'up':
+            return row > 0 and col == 0
+        elif operator == 'left':
+            return row in {3, 5, 7} and col > 0
+        else:
+            return row in {3, 5, 7} and col == 0            
+    
+    def move_blank(self, row: int, col: int, operator: str) -> list[list[int]]:
+        puzzle_copy = copy.deepcopy(self.puzzle)
+        if operator == 'down':
+            puzzle_copy[row][col], puzzle_copy[row + 1][col] =\
+                puzzle_copy[row + 1][col], puzzle_copy[row][col]
+        elif operator == 'up':
+            puzzle_copy[row][col], puzzle_copy[row - 1][col] =\
+                puzzle_copy[row - 1][col], puzzle_copy[row][col]
+        elif operator == 'left':
+            puzzle_copy[row][col], puzzle_copy[row][col - 1] =\
+                puzzle_copy[row][col - 1], puzzle_copy[row][col]
+        else:
+            puzzle_copy[row][col], puzzle_copy[row][col + 1] =\
+                puzzle_copy[row][col + 1], puzzle_copy[row][col]
+        return puzzle_copy
 
     def print_puzzle(self):
         print('|---|')
         for row in range(len(self.puzzle)):
             for col in range(len(self.puzzle[row])):
                 print('|', end=' ')
-                if len(self.puzzle[row]) == 1 and self.puzzle[row][col] :
-                    print(self.puzzle[row][0], '|')
-                    if row == 2 or row == 4 or row == 6:
-                        print('|---|----')
-                    else:
-                        print('|---|')
-                elif len(self.puzzle[row]) == 1 and not self.puzzle[row][col]:
-                    print(' ', '|')
-                    print('|---|')
-                elif len(self.puzzle[row]) > 1 and self.puzzle[row][col]:
+                if self.puzzle[row][col]:
                     print(self.puzzle[row][col], end=' ')
-                    if col == len(self.puzzle[row]) - 1:
-                        print('|')
-                        if row == 3 or row == 5 or row == 7:
-                            print('|---|----')
-                        else:
-                            print('|---|')
                 else:
                     print(' ', end=' ')
-                    if col == len(self.puzzle[row]) - 1:
-                        print('|')
-                        if row == 3 or row == 5 or row == 7:
-                            print('|---|----')
-                        else:
-                            print('|---|')
-        
+            print('|')
+            if row == 2 or row == 4 or row == 6:
+                print('|---|----')
+            elif row == 3 or row == 5 or row == 7:
+                print('|---|----')
+            else:
+                print('|---|')

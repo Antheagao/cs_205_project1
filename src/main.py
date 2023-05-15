@@ -21,13 +21,12 @@ from node import Node
 def main():
     # Declare variables
     initial_state = [[0], [2], [3], [4, 0], [5], [6, 0], [7], [8, 0], [9], [1]]
-    heuristic = 'uniform cost search'
     
     # Display the puzzle name and get the heuristic to use
     print('Welcome to cs205 9-men in a trench puzzle solver.')
-    heuristic = str(input('Select algorithm.\n (1) Uniform Cost Search,\n'
-                          '(2) misplaced tile,\n (3) manhattan distance:'))
+    heuristic = select_heuristic()
     
+    # Begin the ai search to solve the puzzle
     print('Beginning puzzle...')
     time1 = time.perf_counter()
     uniform_cost_search(initial_state, heuristic)
@@ -54,17 +53,19 @@ def uniform_cost_search(puzzle: list[list[int]], heuristic: str) -> Node:
         repeated_states.add(node.get_hash())
         print('The best state to expand with a g(n) =', node.gn, 'and h(n) =',
               node.hn, 'is...')
-        node.print_puzzle()
+        '''node.print_puzzle()'''
         
         if node.puzzle == goal_state:
             while stack_to_print:
                 node = stack_to_print.pop()
                 node.print_puzzle()
+            print('Goal state reached!')
+            print('Depth of goal node:', node.gn)
             print('Number of nodes expanded:', num_nodes_expanded)
             print('Max queue size:', max_queue_size)
             return node
         else:
-            stack_to_print.append(node.puzzle)
+            stack_to_print.append(node)
             num_nodes_expanded += 1
             for child in node.get_children(heuristic):
                 if child.get_hash() not in repeated_states:
@@ -72,6 +73,17 @@ def uniform_cost_search(puzzle: list[list[int]], heuristic: str) -> Node:
 
     print('failure')
     return None
+
+
+def select_heuristic() -> str:
+    choice = int(input('Select algorithm.\n(1) Uniform Cost Search,\n'
+                          '(2) misplaced tile,\n(3) manhattan distance: '))
+    if choice == 1:
+        return 'uniform cost search'
+    elif choice == 2:
+        return 'misplaced tile'
+    else:
+        return 'manhattan distance'
     
 
 if __name__ == '__main__':
