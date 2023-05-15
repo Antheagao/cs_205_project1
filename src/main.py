@@ -9,8 +9,8 @@ wishes to place himself at point 1.
 
 __version__ = '0.1'
 __author__ = 'Anthony Mendez'
+__date__ = '2023-05-11'
 
-from collections import deque
 import heapq as heap
 import time
 
