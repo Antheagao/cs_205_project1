@@ -1,6 +1,6 @@
 # cs_205_project1
 
-This project solves the 9-men in a trench puzzle.
+This project uses an ai search to solve the 9-men in a trench puzzle.
 
 It is implemented using python and the project files can be found in the **src** folder
 
